@@ -119,7 +119,15 @@ def analyze(values):
         return "SIN SEÑAL", "No hay suficientes datos."
 
     last_price = values[-1]
+    diferencia_ema = abs(ema20 - ema50) / last_price * 100
 
+    if diferencia_ema < 0.02:
+        return "SIN SEÑAL", (
+            f"EMA20: {ema20:.5f}\n"
+            f"EMA50: {ema50:.5f}\n"
+            f"RSI: {rsi_value:.1f}\n"
+            "Tendencia demasiado débil."
+        )
     if ema20 > ema50 and rsi_value > 55 and last_price > ema20:
         return "CALL", (
             f"EMA20 > EMA50\n"
