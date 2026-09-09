@@ -120,14 +120,14 @@ def analyze(values):
 
     last_price = values[-1]
 
-    if ema20 > ema50 and rsi_value > 50 and last_price > ema20:
+    if ema20 > ema50 and rsi_value > 55 and last_price > ema20:
         return "CALL", (
             f"EMA20 > EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
             f"Precio sobre EMA20"
         )
 
-    if ema20 < ema50 and rsi_value < 50 and last_price < ema20:
+    if ema20 < ema50 and rsi_value < 45 and last_price < ema20:
         return "PUT", (
             f"EMA20 < EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
