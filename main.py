@@ -121,7 +121,7 @@ def analyze(values):
     last_price = values[-1]
     diferencia_ema = abs(ema20 - ema50) / last_price * 100
 
-    if diferencia_ema < 0.01:
+    if diferencia_ema < 0.005:
         return "SIN SEÑAL", (
             f"EMA20: {ema20:.5f}\n"
             f"EMA50: {ema50:.5f}\n"
