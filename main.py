@@ -1,44 +1,117 @@
 import os
 import time
 import telebot
+from telebot import types
 from dotenv import load_dotenv
-from commands import register_commands
 
-# Load environment variables
 load_dotenv()
 
-# Replace 'TELEGRAM_BOT_TOKEN' with the token you received from BotFather
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-try:
-    bot = telebot.TeleBot(TOKEN)
-    register_commands(bot)
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-    @bot.message_handler(commands=['start', 'hello'])
-    def send_welcome(message):
-        """
-        Handle '/start' and '/hello' commands.
+if not TOKEN:
+    raise ValueError("Falta la variable TELEGRAM_BOT_TOKEN")
 
-        Args:
-            message (telebot.types.Message): The message object.
-        """
-        bot.reply_to(message, "Hello! I'm a simple Telegram bot.")
+bot = telebot.TeleBot(TOKEN)
 
-    @bot.message_handler(func=lambda msg: True)
-    def echo_all(message):
-        """
-        Echo all incoming text messages back to the user.
+ASSETS = [
+    "EUR/USD",
+    "GBP/USD",
+    "USD/JPY",
+    "EUR/JPY",
+    "GOLD (XAU/USD)"
+]
 
-        Args:
-            message (telebot.types.Message): The message object.
-        """
-        bot.reply_to(message, message.text)
+EXPIRIES = [
+    "15 segundos",
+    "30 segundos",
+    "1 minuto",
+    "2 minutos",
+    "5 minutos"
+]
 
-    # Remove webhook to avoid conflicts with polling
-    bot.delete_webhook(drop_pending_updates=True)
-    bot.polling()
 
-except Exception as e:
-    print(f"CRITICAL ERROR: Failed to initialize bot with provided token. Error: {e}")
-    print("The application will hang to prevent a restart loop. Please fix the TELEGRAM_BOT_TOKEN environment variable.")
-    while True:
-        time.sleep(3600)
+@bot.message_handler(commands=["start"])
+def start(message):
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+
+    for asset in ASSETS:
+        button = types.InlineKeyboardButton(
+            asset,
+            callback_data=f"asset|{asset}"
+        )
+        keyboard.add(button)
+
+    bot.send_message(
+        message.chat.id,
+        "📊 BOT DE SEÑALES BINARIAS\n\n"
+        "Selecciona el activo que quieres analizar:",
+        reply_markup=keyboard
+    )
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("asset|"))
+def choose_expiry(call):
+    asset = call.data.split("|", 1)[1]
+
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+
+    for expiry in EXPIRIES:
+        button = types.InlineKeyboardButton(
+            expiry,
+            callback_data=f"expiry|{asset}|{expiry}"
+        )
+        keyboard.add(button)
+
+    bot.answer_callback_query(call.id)
+
+    bot.edit_message_text(
+        f"📈 Activo: {asset}\n\n"
+        "⏱️ Selecciona el tiempo de expiración:",
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=keyboard
+    )
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("expiry|"))
+def signal(call):
+    _, asset, expiry = call.data.split("|", 2)
+
+    bot.answer_callback_query(call.id)
+
+    bot.edit_message_text(
+        f"🔎 ANALIZANDO...\n\n"
+        f"📊 Activo: {asset}\n"
+        f"⏱️ Expiración: {expiry}\n\n"
+        "⏳ Preparando señal...",
+        call.message.chat.id,
+        call.message.message_id
+    )
+
+    time.sleep(2)
+
+    bot.edit_message_text(
+        f"📊 ANÁLISIS\n\n"
+        f"Activo: {asset}\n"
+        f"Expiración: {expiry}\n\n"
+        "⚠️ Aún no hay datos de mercado conectados.\n\n"
+        "Este bot está preparado para añadir el sistema "
+        "de análisis técnico posteriormente.",
+        call.message.chat.id,
+        call.message.message_id
+    )
+
+
+@bot.message_handler(commands=["help"])
+def help_command(message):
+    bot.send_message(
+        message.chat.id,
+        "Usa /start para abrir el menú de señales."
+    )
+
+
+bot.delete_webhook(drop_pending_updates=True)
+
+print("🤖 Bot funcionando")
+
+bot.infinity_polling(skip_pending=True)
