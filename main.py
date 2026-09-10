@@ -115,21 +115,12 @@ def analyze(values):
     ema50 = ema(values, 50)
     rsi_value = rsi(values, 14)
     williams = (max(values[-14:]) - values[-1]) / (max(values[-14:]) - min(values[-14:])) * -100
-    
 
     if ema20 is None or ema50 is None or rsi_value is None:
         return "SIN SEÑAL", "No hay suficientes datos."
 
     last_price = values[-1]
-    diferencia_ema = abs(ema20 - ema50) / last_price * 100
 
-    if diferencia_ema < 0.005:
-        return "SIN SEÑAL", (
-            f"EMA20: {ema20:.5f}\n"
-            f"EMA50: {ema50:.5f}\n"
-            f"RSI: {rsi_value:.1f}\n"
-            "Tendencia demasiado débil."
-        )
     if ema20 > ema50 and rsi_value > 55 and last_price > ema20 and williams > -50:
         return "CALL", (
             f"EMA20 > EMA50\n"
@@ -150,10 +141,10 @@ def analyze(values):
         f"EMA20: {ema20:.5f}\n"
         f"EMA50: {ema50:.5f}\n"
         f"RSI: {rsi_value:.1f}\n"
+        f"Williams %R: {williams:.1f}\n"
         "Condiciones no suficientemente claras."
     )
-
-
+    
 @bot.message_handler(commands=["start"])
 def start(message):
     keyboard = types.InlineKeyboardMarkup(row_width=1)
