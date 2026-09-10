@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir --upgrade pip uv==0.5.29
 # Set UV environment variables for Railway
 ENV UV_PYTHON_DOWNLOADS=never \
     UV_COMPILE_BYTECODE=1 \
-    UV_NO_SYNC=1
 
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
