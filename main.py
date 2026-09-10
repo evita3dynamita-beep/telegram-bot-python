@@ -114,6 +114,8 @@ def analyze(values):
     ema20 = ema(values, 20)
     ema50 = ema(values, 50)
     rsi_value = rsi(values, 14)
+    williams = (max(values[-14:]) - values[-1]) / (max(values[-14:]) - min(values[-14:])) * -100
+    
 
     if ema20 is None or ema50 is None or rsi_value is None:
         return "SIN SEÑAL", "No hay suficientes datos."
@@ -128,17 +130,19 @@ def analyze(values):
             f"RSI: {rsi_value:.1f}\n"
             "Tendencia demasiado débil."
         )
-    if ema20 > ema50 and rsi_value > 55 and last_price > ema20:
+    if ema20 > ema50 and rsi_value > 55 and last_price > ema20 and williams > -50:
         return "CALL", (
             f"EMA20 > EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
+            f"Williams %R: {williams:.1f}\n"
             f"Precio sobre EMA20"
         )
 
-    if ema20 < ema50 and rsi_value < 45 and last_price < ema20:
+    if ema20 < ema50 and rsi_value < 45 and last_price < ema20 and williams < -50:
         return "PUT", (
             f"EMA20 < EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
+            f"Williams %R: {williams:.1f}\n"
             f"Precio bajo EMA20"
         )
 
