@@ -121,7 +121,7 @@ def analyze(values):
 
     last_price = values[-1]
 
-    if ema20 > ema50 and rsi_value > 55 and last_price > ema20 and williams > -50:
+    if ema20 > ema50 and rsi_value > 52 and last_price > ema20 and williams > -50:
         return "CALL", (
             f"EMA20 > EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
@@ -129,7 +129,7 @@ def analyze(values):
             f"Precio sobre EMA20"
         )
 
-    if ema20 < ema50 and rsi_value < 45 and last_price < ema20 and williams < -50:
+    if ema20 < ema50 and rsi_value < 48 and last_price < ema20 and williams < -50:
         return "PUT", (
             f"EMA20 < EMA50\n"
             f"RSI: {rsi_value:.1f}\n"
@@ -144,25 +144,6 @@ def analyze(values):
         f"Williams %R: {williams:.1f}\n"
         "Condiciones no suficientemente claras."
     )
-    
-@bot.message_handler(commands=["start"])
-def start(message):
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-
-    for asset in ASSETS:
-        button = types.InlineKeyboardButton(
-            asset,
-            callback_data=f"asset|{asset}"
-        )
-        keyboard.add(button)
-
-    bot.send_message(
-        message.chat.id,
-        "📊 BOT DE SEÑALES BINARIAS\n\n"
-        "Selecciona el activo que quieres analizar:",
-        reply_markup=keyboard
-    )
-
 
 @bot.callback_query_handler(
     func=lambda call: call.data.startswith("asset|")
